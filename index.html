@@ -1,14 +1,162 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wordle AI Terminal</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Awwwards Sites Showcase</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+
+    :root {
+      --bg: #fafafa;
+      --text: #111;
+      --muted: #666;
+      --card-bg: #fff;
+      --category: #2e8b57;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 3rem 2rem 1rem;
+      text-align: center;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 1300px;
+      margin: 2rem auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .site-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+      background: var(--card-bg);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .site-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .site-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .site-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .site-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 1rem 1.2rem;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+      color: #fff;
+    }
+
+    .site-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .site-category {
+      font-size: 0.85rem;
+      color: #ccc;
+      margin-top: 0.25rem;
+    }
+  </style>
 </head>
 <body>
-  <div id="terminal"></div>
-  <input type="text" id="input" autofocus placeholder="Press Enter after feedback (e.g. GYBBG)" />
-  <button id="resetBtn">Reset</button>
-  <script src="script.js"></script>
+  <header>🏆 Latest Sites of the Day from Awwwards</header>
+
+  <div class="grid">
+
+    <a class="site-card" href="https://www.alexanderkirkeby.com/" target="_blank">
+      <img src="https://assets.awwwards.com/awards/media/cache/thumb_screenshot/uploads/sites/1186524/665db3b21f6c2432095486.jpg" alt="Alexander Kirkeby" />
+      <div class="site-info">
+        <div class="site-name">Alexander Kirkeby</div>
+        <div class="site-category">Portfolio / Art Direction</div>
+      </div>
+    </a>
+
+    <a class="site-card" href="https://www.burocratik.com/" target="_blank">
+      <img src="https://assets.awwwards.com/awards/media/cache/thumb_screenshot/uploads/sites/1186885/665db3d0289b8988460089.jpg" alt="Bürocratik" />
+      <div class="site-info">
+        <div class="site-name">Bürocratik</div>
+        <div class="site-category">Agency / Identity</div>
+      </div>
+    </a>
+
+    <a class="site-card" href="https://beauvoir.design/" target="_blank">
+      <img src="https://assets.awwwards.com/awards/media/cache/thumb_screenshot/uploads/sites/1186516/665db3c75dfbd139313120.jpg" alt="Beauvoir Design" />
+      <div class="site-info">
+        <div class="site-name">Beauvoir</div>
+        <div class="site-category">Design Studio / Minimal</div>
+      </div>
+    </a>
+
+    <a class="site-card" href="https://www.sunlight.team/" target="_blank">
+      <img src="https://assets.awwwards.com/awards/media/cache/thumb_screenshot/uploads/sites/1186925/665db3f394b3f405424112.jpg" alt="Sunlight Team" />
+      <div class="site-info">
+        <div class="site-name">Sunlight Team</div>
+        <div class="site-category">Agency / Branding</div>
+      </div>
+    </a>
+
+    <a class="site-card" href="https://liminalworks.com/" target="_blank">
+      <img src="https://assets.awwwards.com/awards/media/cache/thumb_screenshot/uploads/sites/1186711/665db3dc8fae96a8887906.jpg" alt="Liminal Works" />
+      <div class="site-info">
+        <div class="site-name">Liminal Works</div>
+        <div class="site-category">Interactive / Storytelling</div>
+      </div>
+    </a>
+
+    <a class="site-card" href="https://www.john-doe.com/" target="_blank">
+      <img src="https://assets.awwwards.com/awards/media/cache/thumb_screenshot/uploads/sites/1063591/665db3e6289b8910927267.jpg" alt="John Doe Studio" />
+      <div class="site-info">
+        <div class="site-name">John Doe Studio</div>
+        <div class="site-category">Creative Studio / Visual Design</div>
+      </div>
+    </a>
+
+  </div>
+
+  <script src="https://unpkg.com/scrollreveal"></script>
+  <script>
+    ScrollReveal().reveal('.site-card', {
+      distance: '40px',
+      origin: 'bottom',
+      opacity: 0,
+      interval: 200,
+      duration: 800,
+      easing: 'ease-out'
+    });
+  </script>
 </body>
 </html>

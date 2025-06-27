@@ -9,37 +9,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-    }
-    .loader {
-      position: fixed;
-      inset: 0;
-      background: #111;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 2rem;
-      z-index: 999;
-    }
-    .custom-cursor {
-      position: fixed;
-      top: 0; left: 0;
-      width: 20px; height: 20px;
-      background: white;
-      border-radius: 50%;
-      pointer-events: none;
-      mix-blend-mode: difference;
-      transition: transform 0.15s ease;
-      z-index: 9999;
-    }
-    .experiment-card {cursor:pointer}
+    html, body { margin:0; padding:0; background:#000; color:#fff; font-family:'Inter', sans-serif; overflow:hidden; }
+    .loader { position:fixed; inset:0; background:#111; color:#fff; display:flex; align-items:center; justify-content:center; font-size:2rem; z-index:999; }
+    .custom-cursor { position:fixed; top:0; left:0; width:20px; height:20px; background:white; border-radius:50%; pointer-events:none; mix-blend-mode:difference; transition:transform 0.15s ease; z-index:1000; }
+    .experiment-card { cursor:pointer; }
+    canvas#gameCanvas { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:10; }
   </style>
 </head>
 <body>
@@ -55,42 +29,133 @@
     <h2>Experiments</h2>
     <div class="experiment-list">
       <div class="experiment-card" data-game="gravityBalls"><div class="title">Gravity Balls</div><div class="subtitle">GSAP Physics Playground</div></div>
-      <div class="experiment-card" data-game="shaderPlayground"><div class="title">Shader Playground</div><div class="subtitle">Live Three.js Shaders</div></div>
       <div class="experiment-card" data-game="mouseTrails"><div class="title">Mouse Trails</div><div class="subtitle">Creative pointer effects</div></div>
-      <div class="experiment-card" data-game="timelineLab"><div class="title">Timeline Lab</div><div class="subtitle">Build GSAP timelines visually</div></div>
-      <div class="experiment-card" data-game="morphingShapes"><div class="title">Morphing Shapes</div><div class="subtitle">SVG morph animations</div></div>
-      <div class="experiment-card" data-game="parallaxWorlds"><div class="title">Parallax Worlds</div><div class="subtitle">Layered scroll-based parallax</div></div>
-      <div class="experiment-card" data-game="particleSwarm"><div class="title">Particle Swarm</div><div class="subtitle">Interactive particles</div></div>
       <div class="experiment-card" data-game="colorWaveSynth"><div class="title">Color Wave Synth</div><div class="subtitle">Harmonic color waves</div></div>
-      <div class="experiment-card" data-game="cubeMaze3D"><div class="title">3D Cube Maze</div><div class="subtitle">Three.js experience</div></div>
     </div>
   </section>
 </main>
-
+<canvas id="gameCanvas"></canvas>
 <script>
 const datasets = {
-  gravityBalls:{name:"Gravity Balls",description:"Physics-based ball simulation with GSAP entry animations",settings:{ballCount:50,restitution:0.9,gravity:1,colors:["#ff5f6d","#fbc531","#00a8ff","#4cd137","#9c88ff"]}},
-  shaderPlayground:{name:"Shader Playground",description:"Live Three.js shaders with animated color waves",settings:{fragmentShader:"void main(){float r=abs(sin(gl_FragCoord.x*0.01));float g=abs(sin(gl_FragCoord.y*0.01));float b=0.5;gl_FragColor=vec4(r,g,b,1.0);}",backgroundColor:"#000"}},
-  mouseTrails:{name:"Mouse Trails",description:"GSAP-enhanced pointer trails",settings:{trailMax:150,trailColor:"#fff",trailRadius:5,fadeSpeed:0.05}},
-  timelineLab:{name:"Timeline Lab",description:"Build GSAP timelines with interactive transforms",settings:{rotateTarget:"h1",duration:2,ease:"power1.inOut",scale:1.5}},
-  morphingShapes:{name:"Morphing Shapes",description:"SVG path morph animations with color transitions",settings:{from:"M50 50 L150 50 L150 150 L50 150 Z",to:"M100,50 a50,50 0 1,0 0,100 a50,50 0 1,0 0,-100",duration:2,fillColors:["#f39c12","#e74c3c","#8e44ad"]}},
-  parallaxWorlds:{name:"Parallax Worlds",description:"Layered parallax with GSAP ScrollTrigger",settings:{layers:5,colors:["#1e90ff","#ff5f6d","#fbc531","#4cd137","#9c88ff"],depths:[0.1,0.3,0.5,0.7,0.9]}},
-  particleSwarm:{name:"Particle Swarm",description:"Interactive particle swarm with GSAP-driven speed",settings:{particleCount:300,particleColor:"#00cec9",speed:1.5,radius:4}},
-  colorWaveSynth:{name:"Color Wave Synth",description:"GSAP harmonic wave animations with color shifts",settings:{frequency:0.1,amplitude:50,baseColor:"#1abc9c",cycleSpeed:2}},
-  cubeMaze3D:{name:"3D Cube Maze",description:"First-person GSAP-enhanced Three.js maze explorer",settings:{size:12,cellSize:4,wallColor:"#d63031",playerSpeed:3}}
+  gravityBalls: {
+    name: "Gravity Balls",
+    ballCount: 30,
+    ballRadius: 20,
+    colors: ["#ff5f6d","#fbc531","#00a8ff","#4cd137","#9c88ff"],
+    gravity: 0.4
+  },
+  mouseTrails: {
+    name: "Mouse Trails",
+    trailColor: "#fff",
+    maxPoints: 100
+  },
+  colorWaveSynth: {
+    name: "Color Wave Synth",
+    waveColor: "#1abc9c",
+    waveSpeed: 0.02,
+    amplitude: 60
+  }
 };
 
-document.querySelectorAll(".experiment-card").forEach(card=>{
-  card.addEventListener("click",()=>{
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+document.querySelectorAll(".experiment-card").forEach(card => {
+  card.addEventListener("click", () => {
     document.documentElement.requestFullscreen();
-    const game=card.dataset.game;
-    const data=datasets[game];
-    alert("Loaded "+data.name+" with settings: "+JSON.stringify(data.settings));
-    // here you would pass `data.settings` to your actual JS for each game logic
-  })
+    canvas.style.display = "block";
+    gsap.to("#main-content", { opacity:0, duration:0.5 });
+
+    const game = card.dataset.game;
+    startGame(game);
+  });
 });
 
+function startGame(game) {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  switch(game) {
+    case "gravityBalls":
+      gravityBalls(datasets.gravityBalls);
+      break;
+    case "mouseTrails":
+      mouseTrails(datasets.mouseTrails);
+      break;
+    case "colorWaveSynth":
+      colorWaveSynth(datasets.colorWaveSynth);
+      break;
+  }
+}
+
+function gravityBalls(settings) {
+  let balls = [];
+  for(let i=0;i<settings.ballCount;i++){
+    balls.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      vy:0,
+      color: settings.colors[Math.floor(Math.random()*settings.colors.length)]
+    });
+  }
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    balls.forEach(b=>{
+      b.vy += settings.gravity;
+      b.y += b.vy;
+      if(b.y>canvas.height-settings.ballRadius){
+        b.y=canvas.height-settings.ballRadius;
+        b.vy*=-0.8;
+      }
+      ctx.beginPath();
+      ctx.fillStyle=b.color;
+      ctx.arc(b.x,b.y,settings.ballRadius,0,Math.PI*2);
+      ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function mouseTrails(settings){
+  let trail=[];
+  window.onmousemove = e => {
+    trail.push({x:e.clientX,y:e.clientY});
+    if(trail.length>settings.maxPoints) trail.shift();
+  };
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<trail.length;i++){
+      ctx.fillStyle = settings.trailColor;
+      ctx.globalAlpha = i/trail.length;
+      ctx.beginPath();
+      ctx.arc(trail[i].x,trail[i].y,5,0,Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function colorWaveSynth(settings){
+  let step=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle=settings.waveColor;
+    ctx.beginPath();
+    for(let x=0;x<canvas.width;x++){
+      let y = canvas.height/2 + Math.sin(x*settings.waveSpeed+step)*settings.amplitude;
+      ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    step+=0.05;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 gsap.to(".loader",{y:"-100%",delay:1,duration:1,ease:"power4.inOut"});
+
 const cursor=document.querySelector(".custom-cursor");
 window.addEventListener("mousemove",e=>{
   cursor.style.left=e.clientX+"px";

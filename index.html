@@ -1,671 +1,797 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Animate.fun - Complete Interactive Playground</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Animate.fun</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+  <!-- Locomotive Scroll -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
 
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* Reset + Base */
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a {
+      color: #0af;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    a:focus {
+      outline: 2px solid #0af;
+      outline-offset: 2px;
+    }
+    button {
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      border: none;
+      background: #0af;
+      color: #000;
+      padding: 0.8em 2em;
+      font-weight: 700;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+    button:hover,
+    button:focus {
+      background: #08c;
+      outline: none;
+    }
 
-<!-- GSAP + ScrollTrigger -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    /* Loader */
+    .loader {
+      position: fixed;
+      inset: 0;
+      background: #111;
+      color: white;
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      user-select: none;
+    }
 
-<!-- Three.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+    /* Custom cursor */
+    .custom-cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      transform-origin: center center;
+      transition: background-color 0.2s ease, transform 0.15s ease;
+      z-index: 9999;
+      will-change: transform, background-color;
+    }
 
-<!-- Matter.js Physics -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    /* Main content wrapper */
+    #main-content {
+      position: relative;
+      min-height: 100vh;
+      padding: 3rem 4vw;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
 
-<!-- GSAP MorphSVG plugin from CDN (trial) -->
-<script src="https://assets.codepen.io/16327/MorphSVGPlugin3.min.js"></script>
+    /* Hero section */
+    .hero {
+      text-align: left;
+      margin-bottom: 4rem;
+    }
+    .hero h1 {
+      font-size: 4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      line-height: 1.1;
+    }
+    .hero p {
+      font-weight: 400;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: #ccc;
+    }
+    .explore-btn {
+      font-size: 1.25rem;
+    }
 
-<style>
-  /* === Base styles === */
-  html, body {
-    margin:0; padding:0; background:#000; color:#fff;
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
-    height: 100%;
-  }
-  .loader {
-    position: fixed; inset:0;
-    background: #111;
-    color: #0af;
-    display: flex; justify-content:center; align-items:center;
-    font-size: 2.5rem;
-    user-select:none;
-    z-index: 9999;
-  }
-  .custom-cursor {
-    position: fixed; top:0; left:0;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    border: 2px solid #0af;
-    pointer-events: none;
-    mix-blend-mode: difference;
-    transform: translate(-50%, -50%);
-    transition: transform 0.15s ease;
-    z-index: 9999;
-  }
-  main#main-content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1rem 6rem;
-  }
-  section.hero {
-    text-align: center;
-    padding: 6rem 1rem 4rem;
-    user-select: none;
-  }
-  section.hero h1 {
-    font-weight: 700; font-size: 3.5rem; margin-bottom: 0.25rem;
-  }
-  section.hero p {
-    font-weight: 400; font-size: 1.5rem; color: #55aaff;
-    margin-top: 0; margin-bottom: 2rem;
-  }
-  button.explore-btn {
-    background: #0af;
-    color: #000;
-    border: none;
-    padding: 1rem 2rem;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-  button.explore-btn:hover {
-    background: #09c;
-  }
-  section.experiments {
-    margin-top: 4rem;
-    opacity: 0;
-    max-width: 900px;
-    user-select: none;
-  }
-  section.experiments h2 {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
-    text-align: center;
-    font-weight: 700;
-    color: #0af;
-  }
-  .experiment-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
-    gap: 1.5rem;
-  }
-  a.experiment-card {
-    background: #111;
-    border: 2px solid #0af;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    text-decoration: none;
-    color: #0af;
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  a.experiment-card:hover {
-    background: #0af;
-    color: #000;
-  }
-  a.experiment-card .title {
-    font-weight: 700;
-    font-size: 1.3rem;
-    margin-bottom: 0.25rem;
-  }
-  a.experiment-card .subtitle {
-    font-weight: 400;
-    font-size: 1rem;
-    opacity: 0.8;
-  }
+    /* Experiments section */
+    .experiments {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.8s ease, opacity 0.8s ease;
+      margin-bottom: 6rem;
+    }
+    .experiments.visible {
+      opacity: 1;
+      max-height: 1000vh; /* huge to expand */
+    }
+    .experiments h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
 
-  /* Experiment container */
-  #experiment-container {
-    margin-top: 4rem;
-    border: 2px solid #0af;
-    border-radius: 12px;
-    background: #111;
-    padding: 1rem;
-    min-height: 400px;
-    position: relative;
-  }
+    /* Experiment list grid */
+    .experiment-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 1.8rem;
+    }
+    .experiment-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #111;
+      border-radius: 14px;
+      padding: 1.8rem 2rem;
+      box-shadow: 0 0 12px #0af3;
+      transition: box-shadow 0.3s ease;
+      border: 2px solid transparent;
+      cursor: pointer;
+      outline-offset: 2px;
+    }
+    .experiment-card:hover,
+    .experiment-card:focus {
+      box-shadow: 0 0 20px #0affffcc;
+      border-color: #0affffcc;
+      outline: none;
+      background: #0a1c2a;
+    }
+    .experiment-card:focus-visible {
+      outline: 2px solid #0affffcc;
+    }
+    .experiment-card .title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .experiment-card .subtitle {
+      font-size: 1rem;
+      color: #a0a0a0;
+      user-select: none;
+    }
 
-  /* Canvas & SVG fills */
-  canvas#exp-canvas, svg#exp-svg {
-    width: 100%; height: 400px;
-    display: block;
-    background: #000;
-    border-radius: 8px;
-  }
+    /* Experiment container (dynamic content area) */
+    #experiment-container {
+      width: 100%;
+      max-width: 1080px;
+      min-height: 600px;
+      margin: 0 auto 5rem auto;
+      background: #111;
+      border-radius: 14px;
+      box-shadow: 0 0 24px #0af5;
+      overflow: hidden;
+      position: relative;
+      padding: 1rem;
+    }
 
-  /* Controls for Timeline Lab */
-  #timeline-controls {
-    margin-top: 1rem;
-    display: flex; gap: 1rem; justify-content: center;
-  }
-  #timeline-controls button {
-    padding: 0.5rem 1rem;
-    background: #0af;
-    border: none;
-    border-radius: 6px;
-    font-weight: 700;
-    cursor: pointer;
-    color: #000;
-    transition: background-color 0.3s ease;
-  }
-  #timeline-controls button:hover {
-    background: #09c;
-  }
+    /* Experiment full canvas or SVG styling */
+    #experiment-container canvas,
+    #experiment-container svg,
+    #experiment-container div#parallax-layers {
+      width: 100%;
+      height: 600px;
+      border-radius: 12px;
+      display: block;
+      user-select: none;
+      touch-action: none;
+    }
 
-  /* Parallax Worlds */
-  #parallax-layers {
-    position: relative;
-    height: 400px;
-    overflow: hidden;
-    border-radius: 8px;
-    background: linear-gradient(to bottom, #001522, #002b64);
-  }
-  #parallax-layers > div {
-    position: absolute;
-    width: 120%;
-    height: 150%;
-    top: -25%;
-    left: -10%;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-  }
-  #layer-back { background-image: radial-gradient(circle at center, #001122, #000000); z-index: 1; }
-  #layer-mid { background-image: radial-gradient(circle at center, #004080, #001a40); z-index: 2; }
-  #layer-front { background-image: radial-gradient(circle at center, #00aaff, #005577); z-index: 3; }
-</style>
+    /* Timeline lab controls */
+    #timeline-controls {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    #timeline-controls button {
+      background: #0af;
+      color: #000;
+      font-weight: 700;
+      padding: 0.5em 1.2em;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    #timeline-controls button:hover,
+    #timeline-controls button:focus {
+      background: #08c;
+      outline: none;
+    }
+
+    /* Parallax layers backgrounds */
+    #parallax-layers #layer-back {
+      background: linear-gradient(135deg, #0a1c2a, #041017);
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1;
+      border-radius: 12px;
+    }
+    #parallax-layers #layer-mid {
+      background: linear-gradient(135deg, #142e50, #0b1b2e);
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 2;
+      border-radius: 12px;
+    }
+    #parallax-layers #layer-front {
+      background: linear-gradient(135deg, #2162a1, #154e78);
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 3;
+      border-radius: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      .hero p {
+        font-size: 1rem;
+      }
+      #experiment-container, #experiment-container canvas,
+      #experiment-container svg, #experiment-container div#parallax-layers {
+        height: 400px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<div class="loader">Loading...</div>
-<div class="custom-cursor"></div>
+  <!-- Loader -->
+  <div class="loader" role="alert" aria-live="assertive">Loading...</div>
 
-<main id="main-content" tabindex="0" aria-label="Animate.fun main content">
-  <section class="hero" aria-label="Intro hero">
-    <h1>Animate.fun</h1>
-    <p>Interactive creative animation playground</p>
-    <button class="explore-btn" aria-haspopup="true" aria-expanded="false" aria-controls="experiments-section">Start Exploring</button>
-  </section>
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" aria-hidden="true"></div>
 
-  <section class="experiments" id="experiments-section" aria-label="Experiments" tabindex="-1" style="opacity:0;pointer-events:none;">
-    <h2>Experiments</h2>
-    <div class="experiment-list" role="list">
-      <a class="experiment-card" role="listitem" tabindex="0" data-experiment="gravity-balls" aria-controls="experiment-container" aria-expanded="false" aria-haspopup="true">
-        <div class="title">Gravity Balls</div>
-        <div class="subtitle">GSAP Physics Playground</div>
-      </a>
-      <a class="experiment-card" role="listitem" tabindex="0" data-experiment="shader-playground" aria-controls="experiment-container" aria-expanded="false" aria-haspopup="true">
-        <div class="title">Shader Playground</div>
-        <div class="subtitle">Live Three.js Shaders</div>
-      </a>
-      <a class="experiment-card" role="listitem" tabindex="0" data-experiment="mouse-trails" aria-controls="experiment-container" aria-expanded="false" aria-haspopup="true">
-        <div class="title">Mouse Trails</div>
-        <div class="subtitle">Creative pointer effects</div>
-      </a>
-      <a class="experiment-card" role="listitem" tabindex="0" data-experiment="timeline-lab" aria-controls="experiment-container" aria-expanded="false" aria-haspopup="true">
-        <div class="title">Timeline Lab</div>
-        <div class="subtitle">Build GSAP timelines visually</div>
-      </a>
-      <a class="experiment-card" role="listitem" tabindex="0" data-experiment="morphing-shapes" aria-controls="experiment-container" aria-expanded="false" aria-haspopup="true">
-        <div class="title">Morphing Shapes</div>
-        <div class="subtitle">SVG morph animations</div>
-      </a>
-      <a class="experiment-card" role="listitem" tabindex="0" data-experiment="parallax-worlds" aria-controls="experiment-container" aria-expanded="false" aria-haspopup="true">
-        <div class="title">Parallax Worlds</div>
-        <div class="subtitle">Layered scroll-based parallax</div>
-      </a>
-    </div>
+  <!-- Main Content -->
+  <main id="main-content" data-scroll-container>
 
-    <div id="experiment-container" aria-live="polite" aria-atomic="true" tabindex="0" aria-label="Experiment display area">
-      <p style="color:#0af; font-style: italic; text-align:center; margin-top: 3rem;">Select an experiment to start playing.</p>
-    </div>
-  </section>
-</main>
+    <!-- Hero -->
+    <section class="hero" data-scroll-section>
+      <h1>Animate.fun</h1>
+      <p>Interactive creative animation playground</p>
+      <button class="explore-btn" aria-expanded="false" aria-controls="experiments-section">Start Exploring</button>
+    </section>
+
+    <!-- Experiments Section -->
+    <section id="experiments-section" class="experiments" data-scroll-section tabindex="-1" aria-hidden="true">
+      <h2>Experiments</h2>
+      <div class="experiment-list" role="list">
+        <div role="listitem">
+          <a href="#" class="experiment-card" data-experiment="gravity-balls" tabindex="0" aria-expanded="false" role="button" aria-label="Open Gravity Balls experiment">
+            <div class="title">Gravity Balls</div>
+            <div class="subtitle">GSAP Physics Playground</div>
+          </a>
+        </div>
+        <div role="listitem">
+          <a href="#" class="experiment-card" data-experiment="shader-playground" tabindex="0" aria-expanded="false" role="button" aria-label="Open Shader Playground experiment">
+            <div class="title">Shader Playground</div>
+            <div class="subtitle">Live Three.js Shaders</div>
+          </a>
+        </div>
+        <div role="listitem">
+          <a href="#" class="experiment-card" data-experiment="mouse-trails" tabindex="0" aria-expanded="false" role="button" aria-label="Open Mouse Trails experiment">
+            <div class="title">Mouse Trails</div>
+            <div class="subtitle">Creative pointer effects</div>
+          </a>
+        </div>
+        <div role="listitem">
+          <a href="#" class="experiment-card" data-experiment="timeline-lab" tabindex="0" aria-expanded="false" role="button" aria-label="Open Timeline Lab experiment">
+            <div class="title">Timeline Lab</div>
+            <div class="subtitle">Build GSAP timelines visually</div>
+          </a>
+        </div>
+        <div role="listitem">
+          <a href="#" class="experiment-card" data-experiment="morphing-shapes" tabindex="0" aria-expanded="false" role="button" aria-label="Open Morphing Shapes experiment">
+            <div class="title">Morphing Shapes</div>
+            <div class="subtitle">SVG morph animations</div>
+          </a>
+        </div>
+        <div role="listitem">
+          <a href="#" class="experiment-card" data-experiment="parallax-worlds" tabindex="0" aria-expanded="false" role="button" aria-label="Open Parallax Worlds experiment">
+            <div class="title">Parallax Worlds</div>
+            <div class="subtitle">Layered scroll-based parallax</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Experiment Display Container -->
+    <section id="experiment-container" aria-live="polite" aria-atomic="true" tabindex="0" role="region" aria-label="Experiment display area">
+      <!-- Dynamic experiment content loaded here -->
+      <p style="color:#888;text-align:center;margin-top:2rem;">Select an experiment above to start exploring</p>
+    </section>
+
+  </main>
 
 <script>
 (() => {
-  // Loader fadeout
-  gsap.to(".loader", {
+  // Elements
+  const loader = document.querySelector(".loader");
+  const cursor = document.querySelector(".custom-cursor");
+  const exploreBtn = document.querySelector(".explore-btn");
+  const experimentsSection = document.getElementById("experiments-section");
+  const experimentCards = [...document.querySelectorAll(".experiment-card")];
+  const expContainer = document.getElementById("experiment-container");
+
+  // State
+  let scroll;
+  let expCleanup = null;
+  let currentExperiment = null;
+
+  // Init GSAP Loader hide
+  gsap.to(loader, {
     y: "-100%",
     delay: 1,
     duration: 1,
     ease: "power4.inOut",
-    onComplete: () => document.querySelector(".loader").style.display = "none"
+    onComplete: () => loader.style.display = "none"
   });
 
-  // Headline & button animations
-  gsap.from("section.hero h1", {y:50, opacity:0, delay:2, duration:1, ease:"power4.out"});
-  gsap.from("section.hero p", {y:50, opacity:0, delay:2.3, duration:1, ease:"power4.out"});
-  gsap.from("button.explore-btn", {y:50, opacity:0, delay:2.6, duration:1, ease:"power4.out"});
-
-  // Custom cursor
-  const cursor = document.querySelector(".custom-cursor");
+  // Custom cursor move
   window.addEventListener("mousemove", e => {
-    cursor.style.left = e.clientX + "px";
-    cursor.style.top = e.clientY + "px";
+    cursor.style.left = `${e.clientX}px`;
+    cursor.style.top = `${e.clientY}px`;
   });
+
+  // Cursor scale on hover for links & buttons
   document.querySelectorAll("a, button").forEach(el => {
     el.addEventListener("mouseenter", () => cursor.style.transform = "scale(2)");
     el.addEventListener("mouseleave", () => cursor.style.transform = "scale(1)");
   });
 
-  // Show experiments on explore click
-  const exploreBtn = document.querySelector(".explore-btn");
-  const experimentsSection = document.querySelector("section.experiments");
+  // Initialize LocomotiveScroll & connect with ScrollTrigger
+  scroll = new LocomotiveScroll({
+    el: document.querySelector("#main-content"),
+    smooth: true,
+    multiplier: 1,
+    getDirection: true,
+  });
+  scroll.on("scroll", ScrollTrigger.update);
+
+  ScrollTrigger.scrollerProxy("#main-content", {
+    scrollTop(value) {
+      return arguments.length ? scroll.scrollTo(value, 0, 0) : scroll.scroll.instance.scroll.y;
+    },
+    getBoundingClientRect() {
+      return {top: 0, left: 0, width: window.innerWidth, height: window.innerHeight};
+    },
+    pinType: document.querySelector("#main-content").style.transform ? "transform" : "fixed"
+  });
+
+  ScrollTrigger.addEventListener("refresh", () => scroll.update());
+  ScrollTrigger.refresh();
+
+  // Show/hide experiments on explore button click
   exploreBtn.addEventListener("click", () => {
-    gsap.to(experimentsSection, {
-      opacity: 1,
-      pointerEvents: "auto",
-      duration: 1,
-      ease: "power2.inOut",
-      onComplete: () => experimentsSection.focus()
-    });
-    gsap.to(window, {scrollTo: experimentsSection, duration: 1, ease: "power2.inOut"});
+    const visible = experimentsSection.classList.toggle("visible");
+    exploreBtn.setAttribute("aria-expanded", visible);
+    if(visible) {
+      experimentsSection.focus();
+    }
   });
 
-  // Animate experiment cards on scroll
-  gsap.utils.toArray(".experiment-card").forEach(card => {
-    gsap.from(card, {
-      y: 30,
-      opacity: 0,
-      scrollTrigger: {
-        trigger: card,
-        start: "top 80%",
-        toggleActions: "play none none reverse"
-      },
-      duration: 0.8,
-      ease: "power2.out"
-    });
-  });
-
-  // Experiment container & state
-  const expContainer = document.getElementById("experiment-container");
-  let currentExp = null;
-  let expCleanup = () => {}; // Cleanup function for current experiment
-
-  // Clear container & call cleanup
-  function clearExperiment() {
-    expCleanup();
-    expContainer.innerHTML = '';
-  }
-
-  // Create canvas for 2D or 3D rendering
-  function createCanvas() {
-    const canvas = document.createElement("canvas");
-    canvas.id = "exp-canvas";
-    canvas.style.borderRadius = "8px";
-    canvas.style.display = "block";
-    canvas.width = expContainer.clientWidth;
-    canvas.height = 400;
-    expContainer.appendChild(canvas);
-    return canvas;
-  }
-
-  // Create SVG container for Morphing Shapes
-  function createSVG() {
-    const xmlns = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(xmlns, "svg");
-    svg.setAttribute("id", "exp-svg");
-    svg.setAttribute("viewBox", "0 0 600 400");
-    svg.style.borderRadius = "8px";
-    svg.style.display = "block";
-    svg.style.width = "100%";
-    svg.style.height = "400px";
-    expContainer.appendChild(svg);
-    return svg;
-  }
-
-  // Add event listeners to cards
-  document.querySelectorAll(".experiment-card").forEach(card => {
-    card.addEventListener("click", () => activateExperiment(card));
+  // Keyboard accessible enter & space to activate experiment cards
+  experimentCards.forEach(card => {
     card.addEventListener("keydown", e => {
-      if(e.key === "Enter" || e.key === " ") {
+      if(e.key === "Enter" || e.key === " "){
         e.preventDefault();
-        activateExperiment(card);
+        card.click();
       }
     });
   });
 
-  // Activate selected experiment
-  function activateExperiment(card) {
-    if(currentExp === card.dataset.experiment) return;
+  // Clear previous experiment content and cleanup
+  function clearExperiment() {
+    if (expCleanup) {
+      expCleanup();
+      expCleanup = null;
+    }
+    expContainer.innerHTML = `<p style="color:#888;text-align:center;margin-top:2rem;">Select an experiment above to start exploring</p>`;
+    currentExperiment = null;
+  }
 
-    // Reset all aria-expanded on cards
-    document.querySelectorAll(".experiment-card").forEach(c => {
-      c.setAttribute("aria-expanded", "false");
-    });
-    card.setAttribute("aria-expanded", "true");
-
+  // Load experiment by name
+  function loadExperiment(name) {
+    if (currentExperiment === name) return; // already loaded
     clearExperiment();
-    currentExp = card.dataset.experiment;
 
-    switch(currentExp) {
-      case "gravity-balls": startGravityBalls(); break;
-      case "shader-playground": startShaderPlayground(); break;
-      case "mouse-trails": startMouseTrails(); break;
-      case "timeline-lab": startTimelineLab(); break;
-      case "morphing-shapes": startMorphingShapes(); break;
-      case "parallax-worlds": startParallaxWorlds(); break;
-      default:
-        expContainer.innerHTML = '<p style="color:#0af;text-align:center;margin-top:3rem;">Experiment not found.</p>';
-        break;
+    // Reset aria-expanded on all cards
+    experimentCards.forEach(c => c.setAttribute("aria-expanded", "false"));
+
+    // Set active aria-expanded
+    const activeCard = experimentCards.find(c => c.dataset.experiment === name);
+    if (activeCard) activeCard.setAttribute("aria-expanded", "true");
+
+    currentExperiment = name;
+
+    switch(name) {
+      case "gravity-balls": loadGravityBalls(); break;
+      case "shader-playground": loadShaderPlayground(); break;
+      case "mouse-trails": loadMouseTrails(); break;
+      case "timeline-lab": loadTimelineLab(); break;
+      case "morphing-shapes": loadMorphingShapes(); break;
+      case "parallax-worlds": loadParallaxWorlds(); break;
+      default: clearExperiment();
     }
   }
 
-  // ---- Gravity Balls using Matter.js + GSAP ----
-  function startGravityBalls() {
-    const canvas = createCanvas();
-    const { Engine, Render, World, Bodies, Runner, Composite } = Matter;
-    const engine = Engine.create();
-    const render = Render.create({
-      canvas: canvas,
-      engine: engine,
-      options: {
-        width: canvas.width,
-        height: canvas.height,
-        background: '#000',
-        wireframes: false,
-        showAngleIndicator: false,
-        pixelRatio: window.devicePixelRatio || 1
-      }
+  // Attach click handlers to experiment cards
+  experimentCards.forEach(card => {
+    card.addEventListener("click", e => {
+      e.preventDefault();
+      loadExperiment(card.dataset.experiment);
+      expContainer.focus();
+      window.scrollTo({top: expContainer.offsetTop - 20, behavior: "smooth"});
     });
-    // Create boundaries and balls
-    const ground = Bodies.rectangle(canvas.width / 2, canvas.height - 20, canvas.width, 40, { isStatic: true, render: { fillStyle: '#0af' }});
-    const leftWall = Bodies.rectangle(-20, canvas.height / 2, 40, canvas.height, { isStatic: true });
-    const rightWall = Bodies.rectangle(canvas.width + 20, canvas.height / 2, 40, canvas.height, { isStatic: true });
+  });
+
+  ////////////////////////////
+  // Experiment implementations
+  ////////////////////////////
+
+  // 1. Gravity Balls - Canvas bouncing balls with GSAP physics
+  function loadGravityBalls() {
+    expContainer.innerHTML = `<canvas id="gravity-canvas" aria-label="Gravity Balls experiment canvas" role="img" width="1080" height="600" style="width:100%; height:600px; border-radius:12px; display:block;"></canvas>`;
+    const canvas = document.getElementById("gravity-canvas");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
 
     const balls = [];
-    for(let i = 0; i < 10; i++) {
-      const radius = 20 + Math.random() * 20;
-      const ball = Bodies.circle(
-        50 + Math.random() * (canvas.width - 100),
-        -100 * i,
-        radius,
-        { restitution: 0.9, friction: 0.001, render: { fillStyle: `hsl(${Math.random()*360}, 80%, 60%)` }}
-      );
-      balls.push(ball);
-    }
+    const ballCount = 25;
+    const gravity = 0.6;
+    const friction = 0.75;
 
-    World.add(engine.world, [ground, leftWall, rightWall, ...balls]);
+    class Ball {
+      constructor(x, y, r, color) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.color = color;
+        this.dy = 0;
+        this.dx = (Math.random() - 0.5) * 4;
+      }
+      update() {
+        this.dy += gravity;
+        this.x += this.dx;
+        this.y += this.dy;
 
-    Engine.run(engine);
-    Render.run(render);
-
-    // Cleanup function
-    expCleanup = () => {
-      Render.stop(render);
-      Engine.clear(engine);
-      render.canvas.remove();
-      render.textures = {};
-    };
-  }
-
-  // ---- Shader Playground using Three.js ----
-  function startShaderPlayground() {
-    const canvas = createCanvas();
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 10);
-    camera.position.z = 1;
-
-    const renderer = new THREE.WebGLRenderer({ canvas: canvas });
-    renderer.setSize(canvas.width, canvas.height);
-
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const uniforms = { time: { value: 0 } };
-
-    const material = new THREE.ShaderMaterial({
-      uniforms: uniforms,
-      fragmentShader: `
-        uniform float time;
-        void main(){
-          vec2 uv = gl_FragCoord.xy / vec2(${canvas.width.toFixed(1)},${canvas.height.toFixed(1)});
-          float r = abs(sin(time + uv.x * 10.0));
-          float g = abs(sin(time + uv.y * 10.0));
-          float b = 0.5;
-          gl_FragColor = vec4(r, g, b, 1.0);
+        // Bounce on floor
+        if(this.y + this.r > height) {
+          this.y = height - this.r;
+          this.dy *= -friction;
+          this.dx *= friction;
         }
-      `
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    let animId;
-    function animate(t) {
-      uniforms.time.value = t * 0.001;
-      renderer.render(scene, camera);
-      animId = requestAnimationFrame(animate);
+        // Bounce on walls
+        if(this.x + this.r > width) {
+          this.x = width - this.r;
+          this.dx *= -friction;
+        }
+        if(this.x - this.r < 0) {
+          this.x = this.r;
+          this.dx *= -friction;
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.closePath();
+      }
     }
+
+    // Create balls with vibrant colors
+    const colors = ["#0af", "#0fa", "#af0", "#fa0", "#f0a", "#a0f", "#0ff"];
+    for(let i=0; i < ballCount; i++) {
+      let radius = 20 + Math.random()*15;
+      let x = Math.random()*(width - radius*2) + radius;
+      let y = Math.random()*(height/2);
+      let color = colors[i % colors.length];
+      balls.push(new Ball(x, y, radius, color));
+    }
+
+    // Animation loop with GSAP ticker for smooth fps
+    let animationId;
+
+    function animate() {
+      ctx.clearRect(0,0,width,height);
+      balls.forEach(ball => {
+        ball.update();
+        ball.draw();
+      });
+      animationId = requestAnimationFrame(animate);
+    }
+
     animate();
 
+    // Cleanup
     expCleanup = () => {
-      cancelAnimationFrame(animId);
-      renderer.dispose();
-      renderer.forceContextLoss();
-      canvas.remove();
+      cancelAnimationFrame(animationId);
+      ctx.clearRect(0, 0, width, height);
+      expContainer.innerHTML = "";
+      currentExperiment = null;
     };
   }
 
-  // ---- Mouse Trails using 2D Canvas + GSAP ----
-  function startMouseTrails() {
-    const canvas = createCanvas();
-    const ctx = canvas.getContext("2d");
-    let trail = [];
-    canvas.width = expContainer.clientWidth;
-    canvas.height = 400;
+  // 2. Shader Playground - Three.js animated shader
+  function loadShaderPlayground() {
+    expContainer.innerHTML = `<canvas id="shader-canvas" aria-label="Shader Playground WebGL canvas" role="img" style="border-radius:12px;"></canvas>`;
+    const canvas = document.getElementById("shader-canvas");
+
+    let scene, camera, renderer, uniforms, geometry, material, mesh, frameId;
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+      camera.position.z = 1;
+
+      renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.setClearColor(0x000000, 1);
+
+      geometry = new THREE.PlaneGeometry(2, 2);
+
+      uniforms = {
+        time: {value: 0},
+        resolution: {value: new THREE.Vector2(canvas.clientWidth, canvas.clientHeight)}
+      };
+
+      const fragmentShader = `
+        uniform float time;
+        uniform vec2 resolution;
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / resolution.xy;
+          float color = 0.5 + 0.5*cos(time + uv.xyx + vec3(0,2,4));
+          gl_FragColor = vec4(color, color*0.6, 1.0 - color*0.5, 1.0);
+        }
+      `;
+
+      material = new THREE.ShaderMaterial({
+        uniforms,
+        fragmentShader
+      });
+
+      mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+    }
+
+    function animate(time=0) {
+      uniforms.time.value = time * 0.001;
+      renderer.render(scene, camera);
+      frameId = requestAnimationFrame(animate);
+    }
+
+    function onResize() {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      uniforms.resolution.value.set(width, height);
+    }
+
+    init();
+    animate();
 
     window.addEventListener("resize", () => {
-      canvas.width = expContainer.clientWidth;
-      canvas.height = 400;
+      onResize();
     });
 
-    function onMove(e) {
-      trail.push({ x: e.clientX - canvas.getBoundingClientRect().left, y: e.clientY - canvas.getBoundingClientRect().top, alpha: 1 });
-      if (trail.length > 100) trail.shift();
-    }
-    window.addEventListener("mousemove", onMove);
-
-    let animId;
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      trail.forEach((point, i) => {
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(10,170,255,${point.alpha})`;
-        ctx.arc(point.x, point.y, 10 * (i / trail.length), 0, Math.PI * 2);
-        ctx.fill();
-        point.alpha -= 0.02;
-      });
-      trail = trail.filter(p => p.alpha > 0);
-      animId = requestAnimationFrame(draw);
-    }
-    draw();
-
+    // Cleanup
     expCleanup = () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("mousemove", onMove);
-      canvas.remove();
+      window.cancelAnimationFrame(frameId);
+      renderer.dispose();
+      scene.clear();
+      expContainer.innerHTML = "";
+      currentExperiment = null;
     };
   }
 
-  // ---- Timeline Lab - build GSAP timelines visually ----
-  function startTimelineLab() {
-    expContainer.innerHTML = `
-      <div style="color:#0af; text-align:center; user-select:none;">
-        <h3>Timeline Lab</h3>
-        <svg id="timeline-svg" viewBox="0 0 600 200" width="100%" height="200" style="background:#000; border-radius:8px; margin-bottom:1rem;"></svg>
-        <div id="timeline-controls">
-          <button id="play-btn" aria-label="Play animation">Play</button>
-          <button id="pause-btn" aria-label="Pause animation">Pause</button>
-          <button id="reverse-btn" aria-label="Reverse animation">Reverse</button>
-          <button id="restart-btn" aria-label="Restart animation">Restart</button>
-        </div>
-      </div>
-    `;
+  // 3. Mouse Trails - fading circles following pointer with GSAP
+  function loadMouseTrails() {
+    expContainer.innerHTML = `<div id="mouse-trails-container" aria-label="Mouse Trails experiment" role="img" style="position:relative; width:100%; height:600px; border-radius:12px; overflow:hidden; background:#111;"></div>`;
+    const container = document.getElementById("mouse-trails-container");
 
-    const svg = document.getElementById("timeline-svg");
-    const ns = "http://www.w3.org/2000/svg";
-
-    // Create 3 circles to animate
     const circles = [];
-    for(let i = 0; i < 3; i++) {
-      const c = document.createElementNS(ns, "circle");
-      c.setAttribute("cx", 100 + i * 150);
-      c.setAttribute("cy", 100);
-      c.setAttribute("r", 30);
-      c.setAttribute("fill", `hsl(${i * 120}, 80%, 60%)`);
-      svg.appendChild(c);
+    const circleCount = 15;
+
+    for(let i=0; i<circleCount; i++) {
+      const c = document.createElement("div");
+      c.style.position = "absolute";
+      c.style.width = "20px";
+      c.style.height = "20px";
+      c.style.borderRadius = "50%";
+      c.style.background = `hsl(${i*24}, 100%, 50%)`;
+      c.style.opacity = "0.5";
+      c.style.pointerEvents = "none";
+      c.style.transform = "translate(-50%, -50%)";
+      container.appendChild(c);
       circles.push(c);
     }
 
-    // GSAP timeline
-    const tl = gsap.timeline({ repeat: -1, yoyo: true });
-    tl.to(circles[0], { cy: 50, duration: 1 });
-    tl.to(circles[1], { cy: 150, duration: 1 }, "-=0.5");
-    tl.to(circles[2], { cy: 50, duration: 1 }, "-=0.7");
+    let mousePos = {x: window.innerWidth/2, y: window.innerHeight/2};
+    let lastPos = [...circles].map(() => ({x: mousePos.x, y: mousePos.y}));
 
-    // Controls
+    function animate() {
+      lastPos[0].x += (mousePos.x - lastPos[0].x) * 0.25;
+      lastPos[0].y += (mousePos.y - lastPos[0].y) * 0.25;
+      circles[0].style.left = lastPos[0].x + "px";
+      circles[0].style.top = lastPos[0].y + "px";
+
+      for(let i=1; i<circleCount; i++) {
+        lastPos[i].x += (lastPos[i-1].x - lastPos[i].x) * 0.25;
+        lastPos[i].y += (lastPos[i-1].y - lastPos[i].y) * 0.25;
+        circles[i].style.left = lastPos[i].x + "px";
+        circles[i].style.top = lastPos[i].y + "px";
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener("mousemove", e => {
+      mousePos.x = e.clientX;
+      mousePos.y = e.clientY;
+    });
+
+    animate();
+
+    // Cleanup
+    expCleanup = () => {
+      container.innerHTML = "";
+      currentExperiment = null;
+    };
+  }
+
+  // 4. Timeline Lab - SVG circles with GSAP timeline controls
+  function loadTimelineLab() {
+    expContainer.innerHTML = `
+      <svg id="timeline-svg" viewBox="0 0 600 600" aria-label="Timeline Lab SVG animation" role="img" style="width:100%; height:600px; border-radius:12px; background:#111;">
+        <circle cx="300" cy="300" r="25" fill="#0af" />
+        <circle cx="150" cy="300" r="25" fill="#fa0" />
+        <circle cx="450" cy="300" r="25" fill="#0fa" />
+        <circle cx="300" cy="150" r="25" fill="#af0" />
+        <circle cx="300" cy="450" r="25" fill="#f0a" />
+      </svg>
+      <div id="timeline-controls" role="region" aria-label="Timeline controls">
+        <button id="play-btn">Play</button>
+        <button id="pause-btn">Pause</button>
+        <button id="reverse-btn">Reverse</button>
+        <button id="restart-btn">Restart</button>
+      </div>`;
+
+    const svg = document.getElementById("timeline-svg");
+    const circles = svg.querySelectorAll("circle");
+
+    const tl = gsap.timeline({paused: true, repeat: -1, defaults: {duration: 1, ease: "power1.inOut"}});
+
+    tl.to(circles[0], {attr: {r: 50}, fill: "#0ff"})
+      .to(circles[1], {attr: {r: 50}, fill: "#0ff"}, "<")
+      .to(circles[2], {attr: {r: 50}, fill: "#0ff"}, "<")
+      .to(circles[3], {attr: {r: 50}, fill: "#0ff"}, "<")
+      .to(circles[4], {attr: {r: 50}, fill: "#0ff"}, "<")
+      .to(circles, {attr: {r: 25}, fill: (i) => ["#0af", "#fa0", "#0fa", "#af0", "#f0a"][i]}, "+=1");
+
     document.getElementById("play-btn").onclick = () => tl.play();
     document.getElementById("pause-btn").onclick = () => tl.pause();
     document.getElementById("reverse-btn").onclick = () => tl.reverse();
     document.getElementById("restart-btn").onclick = () => tl.restart();
 
+    tl.play();
+
+    // Cleanup
     expCleanup = () => {
       tl.kill();
-      svg.innerHTML = "";
+      expContainer.innerHTML = "";
+      currentExperiment = null;
     };
   }
 
-  // ---- Morphing Shapes using GSAP MorphSVG ----
-  function startMorphingShapes() {
-    const svg = createSVG();
-    svg.style.background = "#000";
-
-    // Create two paths to morph between
-    const xmlns = "http://www.w3.org/2000/svg";
-
-    const path1 = document.createElementNS(xmlns, "path");
-    path1.setAttribute("d", "M150 200 Q300 50 450 200 T750 200");
-    path1.setAttribute("fill", "#0af");
-    svg.appendChild(path1);
-
-    const path2 = document.createElementNS(xmlns, "path");
-    path2.setAttribute("d", "M150 300 Q300 100 450 300 T750 300");
-    path2.setAttribute("fill", "#fa0");
-    path2.style.display = "none";
-    svg.appendChild(path2);
-
-    // Clone for morph target (invisible)
-    const morphTarget = path2;
-
-    // Animate morph
-    const morphTween = gsap.to(path1, {
-      duration: 2,
-      morphSVG: morphTarget,
-      repeat: -1,
-      yoyo: true,
-      ease: "power1.inOut"
-    });
-
-    expCleanup = () => {
-      morphTween.kill();
-      svg.remove();
-    };
-  }
-
-  // ---- Parallax Worlds using GSAP ScrollTrigger ----
-  function startParallaxWorlds() {
+  // 5. Morphing Shapes - SVG path morph with GSAP
+  function loadMorphingShapes() {
     expContainer.innerHTML = `
-      <div id="parallax-layers" tabindex="0" aria-label="Parallax layered backgrounds">
+      <svg viewBox="0 0 300 300" aria-label="Morphing Shapes experiment" role="img" style="width:100%; height:600px; border-radius:12px; background:#111;">
+        <path id="morph-path" fill="#0af" d="M150 50 Q200 150 150 250 Q100 150 150 50 Z"/>
+      </svg>`;
+
+    const path = document.getElementById("morph-path");
+
+    const shapes = [
+      "M150 50 Q200 150 150 250 Q100 150 150 50 Z",
+      "M150 70 Q220 150 150 230 Q80 150 150 70 Z",
+      "M150 100 Q250 150 150 200 Q50 150 150 100 Z",
+      "M150 50 Q200 150 150 250 Q100 150 150 50 Z"
+    ];
+
+    let idx = 0;
+
+    const morphTimeline = gsap.timeline({repeat: -1, defaults: {duration: 2, ease: "power1.inOut"}});
+
+    function morph() {
+      idx = (idx + 1) % shapes.length;
+      morphTimeline.to(path, {duration: 2, ease: "power1.inOut", attr: {d: shapes[idx]}});
+    }
+
+    morphTimeline.eventCallback("onComplete", morph);
+    morph();
+
+    // Cleanup
+    expCleanup = () => {
+      morphTimeline.kill();
+      expContainer.innerHTML = "";
+      currentExperiment = null;
+    };
+  }
+
+  // 6. Parallax Worlds - layered parallax with ScrollTrigger and Locomotive Scroll
+  function loadParallaxWorlds() {
+    expContainer.innerHTML = `
+      <div id="parallax-layers" style="position:relative; width:100%; height:600px; border-radius:12px; overflow:hidden; user-select:none;">
         <div id="layer-back"></div>
         <div id="layer-mid"></div>
         <div id="layer-front"></div>
-      </div>
-      <p style="color:#0af; text-align:center; margin-top:1rem; font-style:italic;">
-        Scroll to see layered parallax effect
-      </p>
-    `;
+      </div>`;
 
-    const back = document.getElementById("layer-back");
-    const mid = document.getElementById("layer-mid");
-    const front = document.getElementById("layer-front");
+    const layers = {
+      back: document.getElementById("layer-back"),
+      mid: document.getElementById("layer-mid"),
+      front: document.getElementById("layer-front"),
+    };
 
-    // Create a scroll container if not exist (simulate scroll)
-    if (!document.querySelector("body > .spacer")) {
-      const spacer = document.createElement("div");
-      spacer.classList.add("spacer");
-      spacer.style.height = "150vh";
-      document.body.appendChild(spacer);
-    }
+    // Initial positions for parallax
+    gsap.set(layers.back, {y: 0});
+    gsap.set(layers.mid, {y: 0});
+    gsap.set(layers.front, {y: 0});
 
-    // Animate layers with scroll
-    gsap.to(back, {
-      yPercent: 20,
-      ease: "none",
-      scrollTrigger: {
-        trigger: expContainer,
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true
-      }
-    });
-    gsap.to(mid, {
-      yPercent: 40,
-      ease: "none",
-      scrollTrigger: {
-        trigger: expContainer,
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true
-      }
-    });
-    gsap.to(front, {
-      yPercent: 60,
-      ease: "none",
-      scrollTrigger: {
-        trigger: expContainer,
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true
+    // ScrollTrigger + Locomotive scroll parallax effect
+    ScrollTrigger.create({
+      scroller: "#main-content",
+      trigger: "#experiment-container",
+      start: "top center",
+      end: "bottom center",
+      onUpdate: self => {
+        const progress = self.progress;
+        gsap.to(layers.back, {y: progress * -50, ease: "none"});
+        gsap.to(layers.mid, {y: progress * -100, ease: "none"});
+        gsap.to(layers.front, {y: progress * -150, ease: "none"});
       }
     });
 
+    // Cleanup
     expCleanup = () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
-      document.getElementById("parallax-layers").remove();
-      if(document.querySelector(".spacer")) document.querySelector(".spacer").remove();
+      ScrollTrigger.getAll().forEach(st => st.kill());
+      expContainer.innerHTML = "";
+      currentExperiment = null;
     };
   }
-
-  // Accessibility: keyboard navigation for experiment cards
-  let focusedCardIndex = 0;
-  const cards = document.querySelectorAll(".experiment-card");
-  document.addEventListener("keydown", e => {
-    if (document.activeElement === exploreBtn) return; // Ignore on explore btn
-    if (!experimentsSection.style.pointerEvents || experimentsSection.style.pointerEvents === "none") return; // Experiments hidden
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      focusedCardIndex = (focusedCardIndex + 1) % cards.length;
-      cards[focusedCardIndex].focus();
-    }
-    else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      focusedCardIndex = (focusedCardIndex - 1 + cards.length) % cards.length;
-      cards[focusedCardIndex].focus();
-    }
-  });
 
 })();
 </script>
